@@ -1,0 +1,212 @@
+---
+title: "Data Project Proposal"
+author: "Alexis Mekueko"
+date: "10/24/2020"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  slidy_presentation: default
+  beamer_presentation: default
+  ioslides_presentation: default
+header-includes:
+- \usepackage{tikz}
+- \usetikzlibrary{positioning,shapes.multipart,shapes}
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## R Packages
+
+```{r load-packages, message=FALSE}
+
+library(tidyverse) #loading all library needed for this assignment
+library(openintro)
+library(psych)
+#head(fastfood)
+library(readxl)
+library(data.table)
+#library(DT)
+library(knitr)
+
+library(readr)
+#library(plyr)
+library(dplyr)
+library(stringr)
+#library(XML)
+#library(RCurl)
+#library(jsonlite)
+#library(httr)
+
+#library(maps)
+#library(dice)
+# #library(VennDiagram)
+# #library(help = "dice")
+#ibrary(DBI)
+#library(dbplyr)
+
+# library(rstudioapi)
+# library(RJDBC)
+# library(odbc)
+# library(RSQLite)
+# #library(rvest)
+
+#library(readtext)
+#library(ggpubr)
+#library(fitdistrplus)
+#library(ggplot2)
+#library(moments)
+#library(qualityTools)
+#library(normalp)
+#library(utils)
+#library(MASS)
+#library(qqplotr)
+library(DATA606)
+
+#library(knitLatex)
+#library(knitr)
+#library(markdown)
+#library(rmarkdown)
+#render("DATA606_Project_Proposal.Rmd", "pdf_document")
+
+```
+
+Github Link: https://github.com/asmozo24/DATA606_Project_Proposal
+
+Web link: https://rpubs.com/amekueko/682247
+
+
+data source: https://archive.ics.uci.edu/ml/machine-learning-databases/00320/
+
+
+
+
+## Data Preparation
+
+
+```{r}
+
+# load the text file which has the description of all the variable.
+variable_details <- read.delim("https://raw.githubusercontent.com/asmozo24/DATA606_Project_Proposal/main/student.txt", stringsAsFactors=FALSE)
+variable_details
+student_math <- read.csv("https://raw.githubusercontent.com/asmozo24/DATA606_Project_Proposal/main/student-math.csv", stringsAsFactors=FALSE)
+glimpse(student_math)
+view(student_math)
+#student_math
+#summary(hfi)
+#dim(hfi)
+
+student_math0 <- student_math[,c( 'address','Pstatus','studytime','schoolsup', 'famsup','activities','higher', 'internet', 'G1', 'G2', 'G3')]
+student_math1 <- student_math[,c( 'studytime', 'G1', 'G2', 'G3')]
+
+view(student_math1)
+# data looks pretty clean, but let's check the missing data
+sum(is.na(student_math1)) # 0 means no NA found
+
+
+student_math1 <- student_math1 %>% 
+  mutate(studyTime10 = ifelse(student_math1$studytime > 3, "yes", "no"))
+
+study10plus <- student_math1 %>% 
+  filter(studyTime10 == "yes" )  # & G1 & G2 & G3
+  
+ study10below <- student_math1 %>% 
+  filter(studyTime10 == "no" ) 
+ 
+
+
+```
+
+## Research question
+
+There are some study out there suggesting that study time likely affects students performance. Let's verify that in this study.
+Do students studing at least 10hrs weekly do well in class than those with single parent? 
+We could also explore the corelation between study time and students performance. Is there a linear relationship between study time and students performance? In another words, do students putting more hours in study their lecons get better grades than those with few hours of in study time? How does study time impact students grades? 
+
+## Cases
+Each case represents a student at one of the two schools ("GP" - Gabriel Pereira or "MS" - Mousinho da Silveira). There are 395 observations in the given dataset
+
+## Data collection
+Data is collected or made available by archive.ics.uci.edu: The UCI Machine Learning Repository is a collection of databases, domain theories, and data generators that are used by the machine learning community for the empirical analysis of machine learning algorithms. The archive was created as an ftp archive in 1987 by David Aha and fellow graduate students at UC Irvine. The current version of the web site was designed in 2007 by Arthur Asuncion and David Newman, and this project is in collaboration with Rexa.info at the University of Massachusetts Amherst. Funding support from the National Science Foundation is gratefully acknowledged. 
+
+##Type of study
+this is observational/experimental study
+
+##Data source
+
+I found some interesting dataset from -> data source: https://archive.ics.uci.edu/ml/machine-learning-databases/00320/. This data is about a study on students(395) taking math or/and portuguese language course. the data is pretty rich with a txt file that described all variables in the data. therefore there is no need to rename the column. The orignal data format is comma delimited and rendering from R was not easy. So, I used excel with one attemp to fix it. I am interested in the student taking Math course.  with 33 variables. Data available --> https://github.com/asmozo24/DATA606_Project_Proposal
+
+##Response
+the response variable is studytime and it is numerical.
+
+##Explanatory
+The explanatory variable is student grade or the mean in student grade and it is numerical.
+
+#Relevant summary statistics
+
+
+```{r}
+
+describe(student_math1$studytime)
+describe(student_math1$G1)
+describe(student_math1$G2)
+describe(student_math1$G3)
+describe(study10plus$G3)
+describe(study10below$G3)
+
+```
+
+```{r}
+
+# Let's look at the distribution for each vration
+
+ggplot(student_math1, aes(x=studytime)) + geom_histogram() + ggtitle("Students Studying Time during school") 
+ggplot(student_math1, aes(x=G1)) + geom_histogram() + ggtitle("Students Performance during first period") # could add bandwith  binwidth = 1
+hist(student_math1$G1)
+ggplot(student_math1, aes(x=G2)) + geom_histogram() + ggtitle("Students Performance during second period")
+hist(student_math1$G2)
+
+ggplot(student_math1, aes(x=G3)) + geom_histogram() + ggtitle("Students overall Performance or final grade")
+hist(student_math1$G3)
+
+ggplot(study10plus, aes(x=G3)) + geom_histogram() + ggtitle("Students Studying +10hrs Weekly overall Performance or final grade")
+
+ggplot(study10below, aes(x=G3)) + geom_histogram() + ggtitle("Students Studying +10hrs Weekly overall Performance or final grade")
+hist(study10plus$G3)
+
+
+boxplot(study10plus$G3, study10below$G3, names = c("Students Studying +10hrs Weekly", "Students Studying -10hrs Weekly") )
+
+```
+
+
+#Conclusion 
+The New York Times API can be easy to use in scraping articles published on their website. However, I think the website it is pretty nested and need a better understanding of the New York Times website structure. 
+
+\tikzset{basic/.style={
+        draw,
+        rectangle split,
+        rectangle split parts=2,
+        rectangle split part fill={blue!20,white},
+        minimum width=2.5cm,
+        text width=2cm,
+        align=left,
+        font=\itshape
+    },
+    Diamond/.style={ diamond, 
+                        draw, 
+                        shape aspect=2, 
+                        inner sep = 2pt,
+                        text centered,
+                        fill=blue!10!white,
+                        font=\itshape
+                      }
+        }
+
+
